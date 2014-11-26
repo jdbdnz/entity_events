@@ -50,10 +50,10 @@ module EntityEvents
       Interaction.log({
         actor:       actor,
         target:      target,
-        action:      params[:action],
-        controller:  params[:controller],
+        action:      action,
+        controller:  controller,
         parameters:  YAML::dump(params),
-        flag:        params[:flag]
+        flag:        flag
       })
     end
 
@@ -61,24 +61,39 @@ module EntityEvents
       self.class.name
     end
 
-    #OVERRIDE FROM HERE
-
-      def should_record?
+    #if auto_log == false, then should_record? will dictate is the action is recorded
+    def should_record?
+      action_method = (@action.to_s+'?').to_sym
+      if respond_to?(action_method)
+        #if <action>? is defined follow that
+        send action_method
+      else
+        #else if actor or target is defined, assume we are to record
         actor_is_user_defined || target_is_user_defined
       end
-      
-      def action
-        params[:action]
-      end
+    end
 
-      def default_actor
-        current_user
-      end
+    #You can override methods after this line, however it is not nessisary.
+    def controller
+      params[:controller]
+    end
 
-      def default_target
-        id = params["#{params[:controller].to_s.singularize}_id"] || params[:id]
-        params[:controller].classify.constantize.find id if id
-      end
+    def action
+      params[:action]
+    end
+
+    def flag
+      params[:flag]
+    end
+
+    def default_actor
+      current_user
+    end
+
+    def default_target
+      id = params["#{params[:controller].to_s.singularize}_id"] || params[:id]
+      params[:controller].classify.constantize.find id if id
+    end
 
   end
 
