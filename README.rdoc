@@ -16,26 +16,25 @@ This is the first gem I've written so beware if might be a little gnarly and ple
 
 
 DESCRIPTION OF FUNCTIONS
+
 Whenever a request is made an Interaction record is written to the database. An Interaction describes an 'actor' making an 'action' on a 'target'. This is usually the current_user, the controller action which the request is routed to, and the target the object the request is related to. 
 
 i.e. { actor: User, action: Views, target: Post }
 
-Additionally, all the requests params are stored in that interaction, as well as the controller and action names (for querying purposes), and also an option params[:flag] which I added so I could record which href a user used to get there
+Additionally, all that request's params are stored in that interaction, as well as the controller and action names (for querying purposes), and also an option params[:flag] which I added so I could record which href a user used to get there.
 
 
 BASIC IMPLEMENTATION
 
 Steps 1-3 will have your rails app recording the Controller and Action for every Request. If the request is from an authenticated user, that user will be recorded. If entity_events can determine the target object from the params then that will also be recorded (i.e. On FooController Foo with id of 3 would be identified through params[:foo_id] or params[:id], in that order).
 
-1. Add entity_events to your gemfile then run bundle install
 
-===ruby
+===1. Add entity_events to your gemfile then run bundle install
 gem 'entity_events'
 ===
 
-2. create and run a new migration
+===2. create and run a new migration
 
-===ruby
   class CreateInteraction < ActiveRecord::Migration
     def change
       create_table :interactions do |t|
@@ -51,9 +50,7 @@ gem 'entity_events'
   end
 ===
 
-3. On application_controller.rb
-
-===ruby
+===3. On application_controller.rb
   before_filter :entity_events
 
   def entity_events
@@ -65,10 +62,9 @@ gem 'entity_events'
 
 CUSTOMIZATION
 
-4. Recording events on a specific entity, rather than every entity
 Maybe you don't want to record every single request, and you only want to record events on objects that you explicitly say to record. Revise the above ApplicationController code as follows.
 
-===ruby
+===4. Recording events on a specific entity, rather than every entity
   before_filter :entity_events
 
   def entity_events
@@ -79,7 +75,7 @@ Maybe you don't want to record every single request, and you only want to record
 
 Then, given that you want to record Foo events, you create a file at /app/events/foo_events.rb
 
-===ruby
+===
 
 class FooEvent < EntityEvents::EntityEvent
   def should_record?
@@ -89,10 +85,10 @@ end
 
 ===
 
-5. Recording specific events on specific entities, rather than every event
+
 Let's say you care when a Foo is Created, but not when someone requests the new Foo form. Do the following
 
-===ruby
+===5. Recording specific events on specific entities, rather than every event
 
 class FooEvent < EntityEvents::EntityEvent
   def new?
@@ -106,12 +102,12 @@ end
 
 ===
 
-6. Unconventional actors and targets
+
 entity_events does a very basic job of getting the actor and target; it says the actor is the authenticated_user, and the target is object of type params[:controller] with an id of params[:<object>_id] or params[:id]
 
 In this sample, users belong to a group and a Foo has many Bars. Because we care how many bars a group of users make on any given Foo, we want to record the actor as the Group and the target as the Foo. You can do that!
 
-===ruby
+===6. Unconventional actors and targets
 
 class BarEvent < EntityEvents::EntityEvent
   def new_actor
@@ -126,17 +122,16 @@ end
 
 ===
 
-7. Indicator Flags
 Lets say you are analyzing user behavior. There are two buttons to create a new Bar, and you want to see which button people people use more to get to the new Bar form. So long as you are recording the new Bar action, it is as simple as setting the params[:flag] on the button as follows 
 
-===html
+===7. Indicators
   <a id="new_bar_a" href="<%= new_bar_path({flag: 'a'}) %>" />
   <a id="new_bar_b" href="<%= new_bar_path({flag: 'b'}) %>" />
 ===
 
 Maybe you think params[:flag] is ugly though, or perhaps you are already using it for something else, then you will want to override flag in your EntityEvent file to record params[:xyz]. You could do this on each file, as in overriding it on foo_event.rb and bar_event.rb. But if you want to make it normalized throughout your app it would be far simpler to create a new base EntityEvent which FooEvent and BarEvent would inherit from
 
-===ruby
+===
   class CustomEntityEvent < EntityEvents::EntityEvent
     def flag
       params[:xyz]
@@ -150,10 +145,9 @@ Maybe you think params[:flag] is ugly though, or perhaps you are already using i
   end
 ===
 
-8. Other overrides
 If you really want you can override controller, action, flag, default_actor, and default_target on your CustomEntityEvent or on a entity by entity basis (i.e. just for Foo entity in the FooEvent class)
 
-===ruby
+===8. Other overrides
 class CustomEntityEvent < EntityEvents::EntityEvent
     def default_actor
       current_user.group
