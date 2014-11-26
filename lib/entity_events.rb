@@ -41,7 +41,7 @@ module EntityEvents
         send target_method
         @target_is_user_defined = true
       else
-        default_target if auto_log
+        default_target
       end
 
     end
