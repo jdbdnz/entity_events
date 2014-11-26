@@ -1,0 +1,20 @@
+= EntityEvents
+
+ABOUT
+
+Entity Events is a meta data collection tool which uses the MIT licence, written by Josh Dean on Chalkle.com time.
+
+In a nut shell, it records whenever one entity interacts with another entity.
+
+Some have criticized Entity Events as doing the work of a third party metrics service, which to some extent is valid. However I enjoy the flexibility and ownership of recording this myself. 
+
+It is my long term goal to make a gem which will provide basic query functions for the data Entity Events records.
+
+The design pattern was inspired by Pundit. 
+
+This is the first gem I've written so beware if might be a little gnarly and please do contribute if you like the concept but feel you could do some things better.
+
+IMPLEMENTATION
+
+gemfile
+ http://rubygems.org/entity_events
