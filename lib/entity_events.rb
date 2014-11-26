@@ -24,7 +24,6 @@ module EntityEvents
     attr_reader :actor, :action ,:target, :params, :current_user, :target_is_user_defined, :actor_is_user_defined
 
     def initialize(params,current_user)
-      @auto_log = auto_log
       @params = params
       @action = action
       @current_user = current_user
