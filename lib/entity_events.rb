@@ -15,7 +15,7 @@ module EntityEvents
   class << self
     def record(params, current_user, auto_log = true)
       event_finder = EventFinder.find(params[:controller])
-      entity_event = event_finder.new params, current_user, auto_log
+      entity_event = event_finder.new params, current_user
       entity_event.record if auto_log || entity_event.should_record?
     end
   end
