@@ -4,9 +4,9 @@ ABOUT
 
 Entity Events is a meta data collection tool which uses the MIT licence, written by Josh Dean on Chalkle.com time.
 
-In a nut shell, it records whenever one entity interacts with another entity.
+In a nutshell, it records whenever one entity interacts with another entity.
 
-Some have criticized Entity Events as doing the work of a third party metrics service, which to some extent is valid. However I enjoy the flexibility and ownership of recording this myself. 
+Some have criticized Entity Events as doing the work of a third party metrics service, which to some extent is valid. However I enjoy the flexibility, extensibility, and ownership of recording this myself. 
 
 It is my long term goal to make a gem which will provide basic query functions for the data Entity Events records.
 
@@ -14,7 +14,54 @@ The design pattern was inspired by Pundit.
 
 This is the first gem I've written so beware if might be a little gnarly and please do contribute if you like the concept but feel you could do some things better.
 
-IMPLEMENTATION
 
-gemfile
- http://rubygems.org/entity_events
+DESCRIPTION OF FUNCTIONS
+Whenever a request is made an Interaction record is written to the database. An Interaction describes an 'actor' making an 'action' on a 'target'. This is usually the current_user, the controller action which the request is routed to, and the target the object the request is related to. 
+
+i.e. { actor: User, action: Views, target: Post }
+
+Additionally, all the requests params are stored in that interaction, as well as the controller and action names (for querying purposes), and also an option params[:flag] which I added so I could record which href a user used to get there
+
+
+BASIC IMPLEMENTATION
+
+1. Add to gemfile then bundle install
+
+===ruby
+gem 'entity_events'
+===
+
+2. create and run a new migration
+
+===ruby
+  class CreateInteraction < ActiveRecord::Migration
+    def change
+      create_table :interactions do |t|
+        t.string :action
+        t.string :controller
+        t.string :flag
+        t.text   :parameters
+        t.references :actor, polymorphic: true
+        t.references :target, polymorphic: true
+        t.timestamps
+      end
+    end
+  end
+===
+
+3. On application_controller.rb
+
+===ruby
+  before_filter :entity_events
+
+  def entity_events
+      auto_log = true
+      EntityEvents.record(params, current_user, auto_log)
+  end
+===
+
+
+CUSTOMIZATION
+
+The bool auto_log in application_controller.entity_events should be set to true
+Under /app/events/ create 
