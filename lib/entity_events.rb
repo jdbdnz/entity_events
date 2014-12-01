@@ -30,16 +30,16 @@ module EntityEvents
       
       actor_method = (@action.to_s+'_actor').to_sym
       @actor = if respond_to?(actor_method)
-        send actor_method
         @actor_is_user_defined = true
+        send actor_method
       else
         default_actor
       end
 
       target_method = (@action.to_s+'_target').to_sym
       @target = if respond_to?(target_method)
-        send target_method
         @target_is_user_defined = true
+        send target_method
       else
         default_target
       end
@@ -92,7 +92,7 @@ module EntityEvents
 
     def default_target
       id = params["#{params[:controller].to_s.singularize}_id"] || params[:id]
-      params[:controller].classify.constantize.find id if id
+      params[:controller].classify.split(':').last.constantize.find id if id
     end
 
   end
