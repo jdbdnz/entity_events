@@ -52,7 +52,7 @@ module EntityEvents
         target:      target,
         action:      action,
         controller:  controller,
-        parameters:  YAML::dump(params),
+        parameters:  YAML::dump( sanitize(params) ),
         flag:        flag
       })
     end
@@ -93,6 +93,14 @@ module EntityEvents
     def default_target
       id = params["#{params[:controller].to_s.singularize}_id"] || params[:id]
       params[:controller].classify.split(':').last.constantize.find id if id
+    end
+
+    private
+
+    def sanitize(params)
+      params.reject do |key, value|  
+        value.is_a? == ActionDispatch::Http::UploadedFile
+      end
     end
 
   end
