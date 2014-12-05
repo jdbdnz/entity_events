@@ -41,7 +41,7 @@ gem 'entity_events'
         t.string :action
         t.string :controller
         t.string :flag
-        t.text   :parameters
+        t.string :request_ip
         t.references :actor, polymorphic: true
         t.references :target, polymorphic: true
         t.timestamps
@@ -55,7 +55,7 @@ gem 'entity_events'
 
   def entity_events
       auto_log = true
-      EntityEvents.record(params, current_user, auto_log)
+      EntityEvents.record(request, current_user, auto_log)
   end
 ===
 
@@ -69,7 +69,7 @@ Maybe you don't want to record every single request, and you only want to record
 
   def entity_events
       auto_log = false
-      EntityEvents.record(params, current_user, auto_log)
+      EntityEvents.record(request, current_user, auto_log)
   end
 ===
 

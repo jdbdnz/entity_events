@@ -1,7 +1,7 @@
 module EntityEvents
 
   class Interaction < ActiveRecord::Base
-    attr_accessible :controller, :action, :parameters, :flag, :actor, :target, :actor_id, :target_id
+    attr_accessible :controller, :action, :parameters, :flag, :actor, :target, :actor_id, :target_id, :request_ip
 
     belongs_to :actor, polymorphic: true
     belongs_to :target, polymorphic: true
@@ -10,8 +10,5 @@ module EntityEvents
       Interaction.create(interaction)
     end
 
-    def params
-      YAML::load(parameters)
-    end
   end
 end

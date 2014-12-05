@@ -13,21 +13,20 @@ module EntityEvents
   end
 
   class << self
-    def record(params, current_user, auto_log = true)
-      event_finder = EventFinder.find(params[:controller])
-      entity_event = event_finder.new params, current_user
+    def record(request, current_user, auto_log = true)
+      event_finder = EventFinder.find(request.filtered_parameters[:controller])
+      entity_event = event_finder.new request, current_user
       entity_event.record if auto_log || entity_event.should_record?
     end
   end
 
   class EntityEvent
-    attr_reader :actor, :action ,:target, :params, :current_user, :target_is_user_defined, :actor_is_user_defined
+    attr_reader :actor, :action ,:target, :current_user, :target_is_user_defined, :actor_is_user_defined, :request
 
-    def initialize(params,current_user)
-      @params = params
+    def initialize(request, current_user)
+      @request = request
       @action = action
       @current_user = current_user
-      
       actor_method = (@action.to_s+'_actor').to_sym
       @actor = if respond_to?(actor_method)
         @actor_is_user_defined = true
@@ -47,14 +46,13 @@ module EntityEvents
     end
 
     def record
-      Interaction.log({
-        actor:       actor,
-        target:      target,
-        action:      action,
-        controller:  controller,
-        parameters:  ActiveRecord::Base.serialize(params),
-        flag:        flag
-      })
+      Interaction.log({  actor:       actor,
+                         target:      target,
+                         action:      action,
+                         controller:  controller,
+                         flag:        flag,
+                         request_ip:  request.remote_ip
+                      })
     end
 
     def event_class
@@ -75,15 +73,15 @@ module EntityEvents
 
     #You can override methods after this line, however it is not nessisary.
     def controller
-      params[:controller]
+      request.filtered_parameters[:controller]
     end
 
     def action
-      params[:action]
+      request.filtered_parameters[:action]
     end
 
     def flag
-      params[:flag]
+      request.filtered_parameters[:flag]
     end
 
     def default_actor
@@ -91,8 +89,8 @@ module EntityEvents
     end
 
     def default_target
-      id = params["#{params[:controller].to_s.singularize}_id"] || params[:id]
-      params[:controller].classify.split(':').last.constantize.find id if id
+      id = request.filtered_parameters["#{request.filtered_parameters[:controller].to_s.singularize}_id"] || request.filtered_parameters[:id]
+      request.filtered_parameters[:controller].classify.split(':').last.constantize.find id if id
     end
 
 
