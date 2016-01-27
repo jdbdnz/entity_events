@@ -162,9 +162,3 @@ class CustomEntityEvent < EntityEvents::EntityEvent
   end
 end
 ```
-
-
-
-TESTS
-
-coming soon...
